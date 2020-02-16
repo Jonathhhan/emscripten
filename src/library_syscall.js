@@ -868,14 +868,14 @@ var SyscallsLibrary = {
     var stream = SYSCALLS.getStreamFromFD(fd);
     return 0; // we can't do anything synchronously; the in-memory FS is already synced to
   },
-  __syscall150__sig: 'iii',
+  __syscall150__sig: 'iiii',
   __syscall150: '__syscall153',     // mlock
-  __syscall151__sig: 'iii',
+  __syscall151__sig: 'iiii',
   __syscall151: '__syscall153',     // munlock
-  __syscall152__sig: 'iii',
+  __syscall152__sig: 'iiii',
   __syscall152: '__syscall153',     // mlockall
   __syscall153__nothrow: true,
-  __syscall153: function(which) { // munlockall
+  __syscall153: function() { // munlockall
     return 0;
   },
   __syscall163__nothrow: true,
@@ -969,14 +969,14 @@ var SyscallsLibrary = {
     FS.chown(path, owner, group); // XXX we ignore the 'l' aspect, and do the same as chown
     return 0;
   },
-  __syscall199__sig: 'i',
+  __syscall199__sig: 'ii',
   __syscall199: '__syscall202',     // getuid32
-  __syscall200__sig: 'i',
+  __syscall200__sig: 'ii',
   __syscall200: '__syscall202',     // getgid32
-  __syscall201__sig: 'i',
+  __syscall201__sig: 'ii',
   __syscall201: '__syscall202',     // geteuid32
   __syscall202__nothrow: true,
-  __syscall202: function(which) { // getgid32
+  __syscall202: function() { // getgid32
     return 0;
   },
   __syscall207: function(which, fd, owner, group) { // fchown32
@@ -988,14 +988,13 @@ var SyscallsLibrary = {
     FS.chown(path, owner, group);
     return 0;
   },
-  __syscall203__sig: 'ii',
-  __syscall203: '__syscall214',     // setreuid32
-  __syscall204__sig: 'ii',
+  __syscall203__sig: 'iii',
+  __syscall203: '__sysicall214',     // setreuid32
+  __syscall204__sig: 'iii',
   __syscall204: '__syscall214',     // setregid32
-  __syscall213__sig: 'ii',
+  __syscall213__sig: 'iii',
   __syscall213: '__syscall214',     // setuid32
-  __syscall214: function(which, varargs) { // setgid32
-    var uid = SYSCALLS.get();
+  __syscall214: function(which, uid) { // setgid32
     if (uid !== 0) return -{{{ cDefine('EPERM') }}};
     return 0;
   },
@@ -1004,13 +1003,13 @@ var SyscallsLibrary = {
     {{{ makeSetValue('list', '0', '0', 'i32') }}};
     return 1;
   },
-  __syscall208__sig: 'iiii',
+  __syscall208__sig: 'iiiii',
   __syscall208: '__syscall210',     // setresuid32
   __syscall210: function(which, ruid, euid, suid) { // setresgid32
     if (euid !== 0) return -{{{ cDefine('EPERM') }}};
     return 0;
   },
-  __syscall209__sig: 'iii',
+  __syscall209__sig: 'iiiii',
   __syscall209: '__syscall211',     // getresuid
   __syscall211: function(which, ruid, euid, suid) { // getresgid32
 #if SYSCALL_DEBUG
@@ -1724,3 +1723,5 @@ for (var x in SyscallsLibrary) {
   SyscallsLibrary[x + '__proxy'] = 'sync';
 #endif
 }
+
+mergeInto(LibraryManager.library, SyscallsLibrary);
