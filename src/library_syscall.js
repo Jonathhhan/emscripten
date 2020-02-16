@@ -447,7 +447,6 @@ var SyscallsLibrary = {
     return 0;
   },
   __syscall60: function(which, mask) { // umask
-    var mask = SYSCALLS.get();
     var old = SYSCALLS.umask;
     SYSCALLS.umask = mask;
     return old;
