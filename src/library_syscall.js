@@ -514,7 +514,9 @@ var SyscallsLibrary = {
 #if PROXY_POSIX_SOCKETS == 0
   __syscall102__deps: ['$SOCKFS', '$DNS', '_read_sockaddr', '_write_sockaddr'],
   __syscall102: function(which, call, socketvararg) { // socketcall
-    console.error(socketvararg);
+#if SYSCALL_DEBUG
+      err('    (socketcall begin: "' + call + '")');
+#endif
     // socketcalls pass the rest of the arguments in a struct
     SYSCALLS.varargs = socketvararg;
 
@@ -722,7 +724,7 @@ var SyscallsLibrary = {
       }
       default: {
 #if SYSCALL_DEBUG
-        err('    (socketcall: ' + call + ')');
+        err('    (socketcall unknown call: ' + call + ')');
 #endif
         return -{{{ cDefine('ENOSYS') }}}; // unsupported feature
       }

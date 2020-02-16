@@ -68,7 +68,7 @@ long __syscall91(int which, long addr, long len);
 long __syscall94(int which, long fd, long mode);
 long __syscall96(int which, long which_, long who);
 long __syscall97(int which, long which_, long who, long prio);
-long __syscall102(int which, long call, ...);
+long __syscall102(int which, long call, long args);
 long __syscall104(int which, long which_, long new_value, long old_value);
 long __syscall114(int which, long pid, long wstatus, long options, long rusage);
 long __syscall121(int which, long name, long size);
