@@ -19,6 +19,7 @@ import signal
 import stat
 import sys
 import tempfile
+from typing import Optional
 
 # We depend on python 3.6 for fstring support
 if sys.version_info < (3, 6):
@@ -754,3 +755,7 @@ setup_temp_dirs()
 Cache = cache.Cache(config.CACHE)
 
 PRINT_STAGES = int(os.getenv('EMCC_VERBOSE', '0'))
+
+# These get set by setup_temp_dirs
+TEMP_DIR = None
+EMSCRIPTEN_TEMP_DIR = None
