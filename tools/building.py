@@ -154,6 +154,15 @@ def lld_flags_for_executable(external_symbols):
   else:
     cmd.append('--import-undefined')
 
+  # When optimizing for size it helps to put static data first
+  # before the stack (sincs this makes instructions for accessing
+  # this data use a smaller LEB encoding).
+  # However, for debugability is better to have the stack come
+  # first (becuase stack overflows will trap rather than corrupting
+  # data).
+  if not settings.SHRINK_LEVEL:
+    cmd.append('--stack-first')
+
   if settings.IMPORTED_MEMORY:
     cmd.append('--import-memory')
 
