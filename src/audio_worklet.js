@@ -54,7 +54,7 @@ function createWasmAudioWorkletProcessor(audioParams) {
           }
         }
       }  
-      return true
+      return true;
     }
   }
   return WasmAudioWorkletProcessor;
