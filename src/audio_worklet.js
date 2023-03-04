@@ -15,16 +15,6 @@ function createWasmAudioWorkletProcessor(audioParams) {
     constructor(args) {
       super();
 
-      // Copy needed stack allocation functions from the Module object
-      // to global scope, these will be accessed in hot paths, so maybe
-      // they'll be a bit faster to access directly, rather than referencing
-      // them as properties of the Module object.
-      globalThis.stackAlloc = Module['stackAlloc'];
-      globalThis.stackSave = Module['stackSave'];
-      globalThis.stackRestore = Module['stackRestore'];
-      globalThis.HEAPU32 = Module['HEAPU32'];
-      globalThis.HEAPF32 = Module['HEAPF32'];
-
       // Capture the Wasm function callback to invoke.
       this.bufferSize = 128;
       this.stream_callback = Module['wasmTable'].get(stream_callback);
@@ -42,7 +32,7 @@ function createWasmAudioWorkletProcessor(audioParams) {
         for (let c = 0; c < outputChannels; ++c) {
           var outChannel = output[c];
           for (let i = 0, j = c; i < this.bufferSize; ++i, j += outputChannels) {
-            outChannel[i] = HEAPF32.subarray(outbuffer >> 2 + this.bufferSize * 2, (outbuffer >> 2) + this.bufferSize * outputChannels)[j]
+            outChannel[i] = Module.HEAPF32.subarray(outbuffer >> 2 + this.bufferSize * 2, (outbuffer >> 2) + this.bufferSize * outputChannels)[j]
           }
         }
       }
@@ -50,7 +40,7 @@ function createWasmAudioWorkletProcessor(audioParams) {
         for(let c = 0; c < input.length; ++c){
           var inChannel = input[c];
           for(let i = 0, j = c; i < this.bufferSize; ++i, j += inputChannels){
-            HEAPF32.subarray(inbuffer >> 2, (inbuffer >> 2) + this.bufferSize * inputChannels)[j] = inChannel[i];
+            Module.HEAPF32.subarray(inbuffer >> 2, (inbuffer >> 2) + this.bufferSize * inputChannels)[j] = inChannel[i];
           }
         }
       }  
