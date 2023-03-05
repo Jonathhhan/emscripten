@@ -32,7 +32,7 @@ function createWasmAudioWorkletProcessor(audioParams) {
         for (let c = 0; c < outputChannels; ++c) {
           var outChannel = output[c];
           for (let i = 0, j = c; i < this.bufferSize; ++i, j += outputChannels) {
-            outChannel[i] = Module.HEAPF32.subarray(outbuffer >> 2 + this.bufferSize * 2, (outbuffer >> 2) + this.bufferSize * outputChannels)[j]
+            outChannel[i] = Module.HEAPF32.subarray(outbuffer >> 2 + this.bufferSize * 2, (outbuffer >> 2) + this.bufferSize * outputChannels)[j];
           }
         }
       }
