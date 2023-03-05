@@ -25,7 +25,7 @@ function createWasmAudioWorkletProcessor(audioParams) {
     }
 
     process(inputList, outputList, parameters) {
-      this.stream_callback(this.bufferSize,inputChannels,outputChannels,userData);
+      this.stream_callback(this.bufferSize, inputChannels, outputChannels, userData);
       const input = inputList[0];
       const output = outputList[0];
       if (outputChannels > 0) {
