@@ -37,9 +37,9 @@ function createWasmAudioWorkletProcessor(audioParams) {
         }
       }
       if (inputChannels > 0) {
-        for(let c = 0; c < input.length; ++c){
+        for (let c = 0; c < input.length; ++c) {
           var inChannel = input[c];
-          for(let i = 0, j = c; i < this.bufferSize; ++i, j += inputChannels){
+          for (let i = 0, j = c; i < this.bufferSize; ++i, j += inputChannels) {
             Module.HEAPF32.subarray(inbuffer >> 2, (inbuffer >> 2) + this.bufferSize * inputChannels)[j] = inChannel[i];
           }
         }
