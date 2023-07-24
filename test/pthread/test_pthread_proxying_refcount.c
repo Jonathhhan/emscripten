@@ -1,9 +1,10 @@
 #include <assert.h>
 #include <emscripten/console.h>
 #include <emscripten/emscripten.h>
-#include <emscripten/proxying.h>
 #include <emscripten/heap.h>
+#include <emscripten/proxying.h>
 #include <pthread.h>
+#include <sched.h>
 #include <stdbool.h>
 #include <unistd.h>
 
@@ -37,11 +38,16 @@ void register_processed(void) {
   processed++;
 }
 
-void task(void* arg) { *(_Atomic int*)arg = 1; }
+void set_flag(void* arg) { *(_Atomic int*)arg = 1; }
+
+// Delay setting the flag until the next turn of the event loop so it can be set
+// after the proxying queue is destroyed.
+void task(void* arg) { emscripten_async_call(set_flag, arg, 0); }
 
 void* execute_and_free_queue(void* arg) {
   // Wait until we are signaled to execute the queue.
   while (!should_execute) {
+    sched_yield();
   }
 
   // Execute the proxied work then free the empty queues.
@@ -49,18 +55,6 @@ void* execute_and_free_queue(void* arg) {
     emscripten_proxy_execute_queue(queues[i]);
     em_proxying_queue_destroy(queues[i]);
   }
-
-  // Wrap the normal worker event listener so that we can determine when our
-  // proxying events have been received and handled.
-  EM_ASM({
-      var oldOnMessage = onmessage;
-      onmessage = (e) => {
-        oldOnMessage(e);
-        if (e.data.cmd == 'checkMailbox') {
-          _register_processed();
-        }
-      };
-    });
 
   // Exit with a live runtime so the queued work notification is received and we
   // try to execute the queue again, even though we already executed all its
@@ -86,12 +80,10 @@ int main() {
   }
   should_execute = 1;
 
-  // Wait for the tasks to be executed.
+  // Wait for the tasks to be executed. The queues will have been destroyed
+  // after this.
   while (!executed[0] || !executed[1]) {
-  }
-
-  // Wait for the postMessage notification to be received.
-  while (processed < 1) {
+    sched_yield();
   }
 
 #ifndef SANITIZER

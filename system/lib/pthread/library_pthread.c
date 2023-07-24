@@ -36,6 +36,7 @@
 #include <emscripten/threading.h>
 
 #include "threading_internal.h"
+#include "emscripten_internal.h"
 
 int emscripten_pthread_attr_gettransferredcanvases(const pthread_attr_t* a, const char** str) {
   *str = a->_a_transferredcanvases;
@@ -176,9 +177,6 @@ void emscripten_async_waitable_close(em_queued_call* call) {
   em_queued_call_free(call);
 }
 
-extern EMSCRIPTEN_RESULT _emscripten_set_offscreencanvas_size(const char *target, int width, int height);
-extern double emscripten_receive_on_main_thread_js(int functionIndex, int numCallArgs, double* args);
-
 static void _do_call(void* arg) {
   em_queued_call* q = (em_queued_call*)arg;
   // C function pointer
@@ -190,7 +188,7 @@ static void _do_call(void* arg) {
       break;
     case EM_PROXIED_JS_FUNCTION:
       q->returnValue.d =
-        emscripten_receive_on_main_thread_js((intptr_t)q->functionPtr, q->args[0].i, &q->args[1].d);
+        emscripten_receive_on_main_thread_js((intptr_t)q->functionPtr, q->callingThread, q->args[0].i, &q->args[1].d);
       break;
     case EM_FUNC_SIG_V:
       ((em_func_v)q->functionPtr)();
@@ -432,10 +430,11 @@ double _emscripten_run_in_main_runtime_thread_js(int index, int num_args, int64_
   } else {
     c = em_queued_call_malloc();
   }
-  c->calleeDelete = 1-sync;
+  c->calleeDelete = !sync;
   c->functionEnum = EM_PROXIED_JS_FUNCTION;
   // Index not needed to ever be more than 32-bit.
   c->functionPtr = (void*)(intptr_t)index;
+  c->callingThread = pthread_self();
   assert(num_args+1 <= EM_QUEUED_JS_CALL_MAX_ARGS);
   // The types are only known at runtime in these calls, so we store values that
   // must be able to contain any valid JS value, including a 64-bit BigInt if
@@ -597,4 +596,5 @@ void __emscripten_init_main_thread(void) {
   __main_pthread.tsd = (void **)__pthread_tsd_main;
 
   _emscripten_thread_mailbox_init(&__main_pthread);
+  _emscripten_thread_mailbox_await(&__main_pthread);
 }

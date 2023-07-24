@@ -8,6 +8,7 @@
 #pragma once
 
 #include <emscripten/emscripten.h>
+#include <emscripten/promise.h>
 #include <pthread.h>
 
 #ifdef __cplusplus
@@ -26,13 +27,13 @@ extern "C" {
 typedef struct em_proxying_queue em_proxying_queue;
 
 // Create and destroy proxying queues.
-em_proxying_queue* em_proxying_queue_create();
+em_proxying_queue* em_proxying_queue_create(void);
 void em_proxying_queue_destroy(em_proxying_queue* q);
 
 // Get the queue used for proxying low-level runtime work. Work on this queue
 // may be processed at any time inside system functions, so it must be
 // nonblocking and safe to run at any time, similar to a native signal handler.
-em_proxying_queue* emscripten_proxy_get_system_queue();
+em_proxying_queue* emscripten_proxy_get_system_queue(void);
 
 // Execute all the tasks enqueued for the current thread on the given queue. New
 // tasks that are enqueued concurrently with this execution will be executed as
@@ -101,6 +102,18 @@ int emscripten_proxy_callback_with_ctx(em_proxying_queue* q,
                                        void (*callback)(void*),
                                        void (*cancel)(void*),
                                        void* arg);
+
+__attribute__((warn_unused_result)) em_promise_t
+emscripten_proxy_promise(em_proxying_queue* q,
+                         pthread_t target_thread,
+                         void (*func)(void*),
+                         void* arg);
+
+__attribute__((warn_unused_result)) em_promise_t
+emscripten_proxy_promise_with_ctx(em_proxying_queue* q,
+                                  pthread_t target_thread,
+                                  void (*func)(em_proxying_ctx*, void*),
+                                  void* arg);
 
 #ifdef __cplusplus
 } // extern "C"
